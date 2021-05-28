@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Example
+  m_Shader: {fileID: 4800000, guid: e2204c6c62f801848ba806cf82fe630e, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 5
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AtmosTex:
+        m_Texture: {fileID: 2800000, guid: 72e473c0a8af4744eabef75ad48ab94c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 93fa7224b9d769d46a38b2d84cbf56d3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CloudMap:
+        m_Texture: {fileID: 2800000, guid: 72e473c0a8af4744eabef75ad48ab94c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CloudNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GroundMap:
+        m_Texture: {fileID: 2800000, guid: 46ee122979e0b634b9765be1b62cfcb2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _IllumMap:
+        m_Texture: {fileID: 2800000, guid: 3e75551bd233e1e42bd4a3bfe68336a6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _IllumTex:
+        m_Texture: {fileID: 2800000, guid: 3e75551bd233e1e42bd4a3bfe68336a6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 1bc46539e21fd964887c224c958f21be, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: 3510ba0b0bdef4543baf1a39385ef59c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _Alpha: 1
+    - _CityEmissionStrength: 0.45
+    - _CloudAlpha: 1
+    - _EmissionStr: 0.8214286
+    - _Parallax: 0.0506
+    - _Shininess: 158
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColour: {r: 1, g: 0.8039216, b: 0.3764706, a: 1}
+    - _SpecularColour: {r: 1, g: 1, b: 0.8039216, a: 0.44313726}

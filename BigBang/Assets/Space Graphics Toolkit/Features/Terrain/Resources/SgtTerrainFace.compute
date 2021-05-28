@@ -1,0 +1,177 @@
+﻿#pragma kernel CSFace
+#pragma kernel CSPoint
+
+struct Output
+{
+	float3 Vertex;
+	float3 Normal;
+	float4 Tangent;
+	float2 Coord1;
+	float2 Coord2;
+};
+
+Texture2D<float4> _HeightMap;
+SamplerState sampler_HeightMap;
+float _HeightMapScale;
+float2 _HeightMapSize;
+
+Texture2D<float4> _MaskMap;
+SamplerState sampler_MaskMap;
+
+float _DetailTiling;
+
+Texture2D<float4> _DetailMapA;
+SamplerState sampler_DetailMapA;
+float _DetailScaleA;
+
+Texture2D<float4> _DetailMapB;
+SamplerState sampler_DetailMapB;
+float _DetailScaleB;
+
+uint   _Size;
+uint   _Side;
+float3 _Point;
+float  _Step;
+float  _Radius;
+float  _NormalStep;
+float  _NormalStrength;
+
+float3 _CornerBL;
+float3 _CornerBR;
+float3 _CornerTL;
+
+RWStructuredBuffer<Output> _Output;
+
+float2 CartesianToEquirectangular(float3 xyz)
+{
+	float2 coord;
+
+	coord.y = asin(xyz.y / length(xyz));
+	coord.y = 0.5f + coord.y * 0.31830988618379067153776752674503f;
+
+	switch (_Side)
+	{
+		case 0:
+		{
+			coord.x = atan2(xyz.z, xyz.x);
+			coord.x = coord.x * 0.15915494309189533576888376337251f - 0.5f;
+		}
+		break;
+
+		case 5:
+		{
+			coord.x = atan2(xyz.z, xyz.x);
+			coord.x = coord.x * 0.15915494309189533576888376337251f + 0.5f;
+		}
+		break;
+
+		default:
+		{
+			coord.x = atan2(xyz.x, xyz.z);
+			coord.x = 0.75f - coord.x * 0.15915494309189533576888376337251f;
+		}
+		break;
+	}
+
+	return coord;
+}
+
+float4 SampleSmooth(Texture2D<float4> tex, SamplerState sam, float2 coord, float2 size)
+{
+	float2 pix = coord * size;
+	float2 sub = floor(pix - 0.5f) + 0.5f;
+	float2 f   = pix - sub;
+
+	f = smoothstep(float2(0.0f, 0.0f), float2(1.0f, 1.0f), f);
+
+	return tex.SampleLevel(sam, (sub + f) / size, 0);
+}
+
+float4 Sample2(Texture2D<float4> tex, SamplerState sam, float4 coords, float polar)
+{
+	float4 tex1 = tex.SampleLevel(sam, coords.xy, 0);
+	float4 tex2 = tex.SampleLevel(sam, coords.zw, 0);
+
+	return lerp(tex1, tex2, polar);
+}
+
+float GetHeightUV(float2 coord, float4 detailCoord)
+{
+	float  height    = _Radius;
+	float4 heightMap = SampleSmooth(_HeightMap, sampler_HeightMap, coord, _HeightMapSize);
+	float4 maskMap   = _MaskMap.SampleLevel(sampler_HeightMap, coord, 0);
+	float  polar     = saturate((abs(coord.y - 0.5f) - 0.2f) * 30.0f);
+
+	height += Sample2(_DetailMapA, sampler_DetailMapA, detailCoord, polar).w * maskMap.x * _DetailScaleA;
+	height += Sample2(_DetailMapB, sampler_DetailMapB, detailCoord, polar).w * maskMap.y * _DetailScaleB;
+
+	height += heightMap.w * _HeightMapScale;
+
+	return height;
+}
+
+float GetHeightXYZ(float3 sphere)
+{
+	float2 coord       = CartesianToEquirectangular(sphere);
+	float2 cap         = sphere.xz * 0.5f;
+	float4 detail      = float4(coord, cap); detail.x *= 2.0f;
+	float4 detailCoord = detail * _DetailTiling;
+
+	return GetHeightUV(coord, detailCoord);
+}
+
+void FillOutput(uint i, float3 sphere)
+{
+	float2 coord       = CartesianToEquirectangular(sphere);
+	float2 cap         = sphere.xz * 0.5f;
+	float4 detail      = float4(coord, cap); detail.x *= 2.0f;
+	float4 detailCoord = detail * _DetailTiling;
+	float  height1     = GetHeightUV(coord, detailCoord);
+	float3 point1      = sphere * height1;
+
+	// POSITION + COORD
+	_Output[i].Vertex = point1;
+	_Output[i].Coord1 = coord;
+	_Output[i].Coord2 = cap;
+
+	// Vectors
+	float3 anchorP = normalize(sphere + float3(0.0f, _NormalStep, 0.0f));
+	float3 anchorD = normalize(anchorP - sphere) * _NormalStep;
+	float3 anchorT = cross(sphere, anchorD);
+
+	float3 sphere2 = normalize(sphere + anchorD);
+	float  height2 = GetHeightXYZ(sphere2);
+	float3 point2  = sphere2 * lerp(height1, height2, _NormalStrength);
+
+	float3 sphere3 = normalize(sphere + anchorT);
+	float  height3 = GetHeightXYZ(sphere3);
+	float3 point3  = sphere3 * lerp(height1, height3, _NormalStrength);
+
+	// NORMAL
+	_Output[i].Normal = normalize(cross(point2 - point1, point3 - point1));
+
+	// TANGENT
+	_Output[i].Tangent = float4(normalize(point2 - point1), 1.0f);
+}
+
+[numthreads(8,8,1)]
+void CSFace(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x < _Size && id.y < _Size)
+	{
+		int i = id.x + id.y * _Size;
+
+		float3 corner  = _CornerBL;
+		float3 vectorX = (_CornerBR - _CornerBL) * _Step;
+		float3 vectorY = (_CornerTL - _CornerBL) * _Step;
+		float3 cube    = corner + vectorX * id.x + vectorY * id.y;
+		
+		FillOutput(i, normalize(cube));
+	}
+}
+
+[numthreads(1, 1, 1)]
+void CSPoint(uint3 id : SV_DispatchThreadID)
+{
+	FillOutput(0, normalize(_Point));
+}

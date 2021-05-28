@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="qcar_config.xsd">
+  <Tracking>
+    <ImageTarget name="vuforia_stones_vergium" size="20.000000 14.000000" />
+    <ImageTarget name="side1" size="5.000000 3.534778" />
+    <ImageTarget name="side2" size="5.000000 3.534778" />
+    <ImageTarget name="marth" size="500.000000 312.500000" />
+    <ImageTarget name="habitat" size="500.000000 312.500000" />
+    <ImageTarget name="landing" size="500.000000 312.500000" />
+    <ImageTarget name="space" size="500.000000 312.500000" />
+    <ImageTarget name="launch" size="500.000000 312.500000" />
+    <ImageTarget name="car" size="500.000000 312.500000" />
+    <ImageTarget name="pebble" size="5.000000 3.500000" />
+    <ImageTarget name="gr" size="5.000000 3.499222" />
+  </Tracking>
+</QCARConfig>
